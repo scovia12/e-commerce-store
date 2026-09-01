@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mastery Store | Capstone Project</title>
+  <style>
+    /* CSS Variables & Theme Setup */
+    :root {
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+      --border-color: #e0e0e0;
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger-color: #dc2626;
+      --danger-hover: #b91c1c;
+      --success-color: #16a34a;
+      --header-bg: #1e293b;
+      --header-text: #ffffff;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-color: #f8fafc;
+      --border-color: #334155;
+      --header-bg: #020617;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background 0.3s, color 0.3s; }
+    body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; padding-bottom: 40px; }
+
+    /* Layout & Display Control */
+    .hidden { display: none !important; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+    /* Header */
+    header { background-color: var(--header-bg); color: var(--header-text); padding: 15px 0; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .header-content { display: flex; justify-content: space-between; align-items: center; }
+    .user-controls { display: flex; gap: 15px; align-items: center; }
+    
+    /* Buttons */
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+    .btn-primary { background-color: var(--primary-color); color: white; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-danger { background-color: var(--danger-color); color: white; }
+    .btn-danger:hover { background-color: var(--danger-hover); }
+    .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
+
+    /* Authentication Section */
+    .auth-container { max-width: 400px; margin: 50px auto; background: var(--card-bg); padding: 30px; border-radius: 10px; border: 1px solid var(--border-color); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    .auth-form { display: flex; flex-direction: column; gap: 15px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: 0.9rem; font-weight: 600; }
+    .form-group input { padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-color); color: var(--text-color); }
+    .auth-toggle { text-align: center; margin-top: 15px; font-size: 0.9rem; }
+    .auth-toggle a { color: var(--primary-color); text-decoration: none; font-weight: 600; cursor: pointer; }
+    .error-msg { color: var(--danger-color); font-size: 0.85rem; }
+
+    /* Controls Bar (Search & Filter) */
+    .controls { display: flex; flex-wrap: wrap; gap: 15px; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .search-box { flex: 1; min-width: 250px; }
+    .search-box input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); }
+    .categories { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cat-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 14px; border-radius: 20px; cursor: pointer; }
+    .cat-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+    /* Main Grid Structure */
+    .store-layout { display: grid; grid-template-columns: 1fr 350px; gap: 25px; }
+    @media (max-width: 900px) { .store-layout { grid-template-columns: 1fr; } }
+
+    /* Product Grid */
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    .product-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+    .product-card img { width: 100%; height: 160px; object-fit: cover; }
+    .product-info { padding: 15px; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+    .product-category { font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 700; }
+    .product-title { font-size: 1.1rem; font-weight: 600; }
+    .product-price { font-size: 1.2rem; font-weight: 700; color: var(--primary-color); margin-top: auto; }
+
+    /* Shopping Cart Panel */
+    .cart-panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; height: fit-content; }
+    .cart-panel h2 { margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    .cart-items { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; margin-bottom: 15px; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    .item-details { display: flex; flex-direction: column; gap: 4px; }
+    .qty-controls { display: flex; gap: 6px; align-items: center; margin-top: 4px; }
+    .cart-totals { border-top: 2px solid var(--border-color); padding-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+    .total-row { display: flex; justify-content: space-between; }
+    .total-row.grand { font-size: 1.2rem; font-weight: 700; color: var(--primary-color); }
+
+    /* Toast Notification (Bonus Feature) */
+    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+    .toast { background: var(--header-bg); color: var(--header-text); padding: 12px 20px; border-radius: 6px; margin-top: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="container header-content">
+      <h1>Mastery Store</h1>
+      <div class="user-controls">
+        <button id="theme-toggle" class="btn btn-sm" aria-label="Toggle theme">🌙 Dark</button>
+        <span id="user-display" class="hidden"></span>
+        <button id="logout-btn" class="btn btn-danger btn-sm hidden">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    
+    <!-- Authentication View -->
+    <section id="auth-section" class="auth-container">
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form">
+        <h2>Sign In</h2>
+        <div class="form-group">
+          <label for="login-email">Email or Username</label>
+          <input type="text" id="login-email" required />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required />
+        </div>
+        <div id="login-error" class="error-msg"></div>
+        <button type="submit" class="btn btn-primary">Login</button>
+        <div class="auth-toggle">
+          Don't have an account? <a id="show-signup">Sign Up</a>
+        </div>
+      </form>
+
+      <!-- Sign Up Form -->
+      <form id="signup-form" class="auth-form hidden">
+        <h2>Create Account</h2>
+        <div class="form-group">
+          <label for="signup-username">Username</label>
+          <input type="text" id="signup-username" required />
+        </div>
+        <div class="form-group">
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" required />
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" required />
+        </div>
+        <div id="signup-error" class="error-msg"></div>
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+        <div class="auth-toggle">
+          Already have an account? <a id="show-login">Log In</a>
+        </div>
+      </form>
+    </section>
+
+    <!-- Main Store View -->
+    <main id="store-section" class="hidden">
+      <!-- Controls -->
+      <div class="controls">
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="Search products by name..." />
+        </div>
+        <div class="categories" id="category-filters">
+          <button class="cat-btn active" data-category="All">All Products</button>
+          <button class="cat-btn" data-category="Electronics">Electronics</button>
+          <button class="cat-btn" data-category="Clothes">Clothes</button>
+          <button class="cat-btn" data-category="Shoes">Shoes</button>
+          <button class="cat-btn" data-category="Food">Food</button>
+        </div>
+      </div>
+
+      <!-- Store & Cart Layout -->
+      <div class="store-layout">
+        <!-- Products -->
+        <div class="product-grid" id="product-grid"></div>
+
+        <!-- Cart Panel -->
+        <aside class="cart-panel">
+          <h2>Your Cart (<span id="cart-count">0</span>)</h2>
+          <div class="cart-items" id="cart-items"></div>
+          
+          <div class="cart-totals">
+            <div class="total-row">
+              <span>Subtotal:</span>
+              <span id="subtotal">$0.00</span>
+            </div>
+            <div class="total-row">
+              <span>VAT (18%):</span>
+              <span id="vat-amount">$0.00</span>
+            </div>
+            <div class="total-row grand">
+              <span>Grand Total:</span>
+              <span id="grand-total">$0.00</span>
+            </div>
+            <button id="clear-cart-btn" class="btn btn-danger" style="margin-top: 10px;">Clear Cart</button>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. DATA MODELS & INITIAL STATE
+    // ==========================================
+    const products = [
+      { id: 1, name: "Wireless Headphones", price: 99.99, category: "Electronics", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80" },
+      { id: 2, name: "Smart Watch", price: 149.99, category: "Electronics", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80" },
+      { id: 3, name: "Cotton T-Shirt", price: 19.99, category: "Clothes", image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&q=80" },
+      { id: 4, name: "Denim Jacket", price: 59.99, category: "Clothes", image: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=500&q=80" },
+      { id: 5, name: "Running Shoes", price: 79.99, category: "Shoes", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80" },
+      { id: 6, name: "Casual Sneakers", price: 65.00, category: "Shoes", image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=500&q=80" },
+      { id: 7, name: "Organic Coffee Beans", price: 14.50, category: "Food", image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=500&q=80" },
+      { id: 8, name: "Dark Chocolate Box", price: 12.00, category: "Food", image: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=500&q=80" }
+    ];
+
+    let cart = [];
+    let activeCategory = 'All';
+    let searchQuery = '';
+
+    // ==========================================
+    // 2. DOM ELEMENTS
+    // ==========================================
+    const authSection = document.getElementById('auth-section');
+    const storeSection = document.getElementById('store-section');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const userDisplay = document.getElementById('user-display');
+    const logoutBtn = document.getElementById('logout-btn');
+    const productGrid = document.getElementById('product-grid');
+    const searchInput = document.getElementById('search-input');
+    const categoryFilters = document.getElementById('category-filters');
+    const cartItemsContainer = document.getElementById('cart-items');
+    const cartCount = document.getElementById('cart-count');
+    const subtotalEl = document.getElementById('subtotal');
+    const vatEl = document.getElementById('vat-amount');
+    const grandTotalEl = document.getElementById('grand-total');
+    const clearCartBtn = document.getElementById('clear-cart-btn');
+
+    // ==========================================
+    // 3. STORAGE HELPERS
+    // ==========================================
+    const getStoredUsers = () => JSON.parse(localStorage.getItem('users')) || [];
+    const getStoredCart = () => JSON.parse(localStorage.getItem('cart')) || [];
+    const getActiveSession = () => JSON.parse(localStorage.getItem('activeUser'));
+
+    const saveCart = () => {
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
+    };
+
+    // ==========================================
+    // 4. AUTHENTICATION SYSTEM
+    // ==========================================
+    const initAuth = () => {
+      const activeUser = getActiveSession();
+      if (activeUser) {
+        userDisplay.textContent = `Hello, ${activeUser.username}`;
+        userDisplay.classList.remove('hidden');
+        logoutBtn.classList.remove('hidden');
+        authSection.classList.add('hidden');
+        storeSection.classList.remove('hidden');
+        cart = getStoredCart();
+        renderStore();
+      } else {
+        userDisplay.classList.add('hidden');
+        logoutBtn.classList.add('hidden');
+        authSection.classList.remove('hidden');
+        storeSection.classList.add('hidden');
+      }
+    };
+
+    // Form Navigation Toggle
+    document.getElementById('show-signup').addEventListener('click', () => {
+      loginForm.classList.add('hidden');
+      signupForm.classList.remove('hidden');
+    });
+
+    document.getElementById('show-login').addEventListener('click', () => {
+      signupForm.classList.add('hidden');
+      loginForm.classList.remove('hidden');
+    });
+
+    // Handle Signup
+    signupForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('signup-username').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const errorEl = document.getElementById('signup-error');
+
+      const users = getStoredUsers();
+      if (users.some(u => u.email === email || u.username === username)) {
+        errorEl.textContent = 'User with this email or username already exists.';
+        return;
+      }
+
+      const newUser = { username, email, password };
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
+      localStorage.setItem('activeUser', JSON.stringify(newUser));
+      
+      showToast('Account created successfully!');
+      signupForm.reset();
+      errorEl.textContent = '';
+      initAuth();
+    });
+
+    // Handle Login
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const identifier = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errorEl = document.getElementById('login-error');
+
+      const users = getStoredUsers();
+      const user = users.find(u => u.email === identifier || u.username === identifier);
+
+      // Clear error message explicitly per UX/security criteria
+      if (!user || user.password !== password) {
+        errorEl.textContent = 'Invalid credentials. Please check your username/email and password.';
+        return;
+      }
+
+      localStorage.setItem('activeUser', JSON.stringify(user));
+      showToast('Logged in successfully!');
+      loginForm.reset();
+      errorEl.textContent = '';
+      initAuth();
+    });
+
+    // Handle Logout
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('activeUser');
+      showToast('Logged out');
+      initAuth();
+    });
+
+    // ==========================================
+    // 5. STORE FRONT & FILTERING
+    // ==========================================
+    const renderProducts = () => {
+      const filtered = products.filter(product => {
+        const matchesCategory = activeCategory === 'All' || product.category === activeCategory;
+        const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+      });
+
+      productGrid.innerHTML = filtered.map(product => `
+        <div class="product-card">
+          <img src="${product.image}" alt="${product.name}">
+          <div class="product-info">
+            <span class="product-category">${product.category}</span>
+            <div class="product-title">${product.name}</div>
+            <div class="product-price">$${product.price.toFixed(2)}</div>
+            <button class="btn btn-primary" onclick="addToCart(${product.id})">Add to Cart</button>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    // Live Search Event Listener
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderProducts();
+    });
+
+    // Category Filter Event Listener
+    categoryFilters.addEventListener('click', (e) => {
+      if (e.target.classList.contains('cat-btn')) {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        activeCategory = e.target.dataset.category;
+        renderProducts();
+      }
+    });
+
+    // ==========================================
+    // 6. SHOPPING CART OPERATIONS
+    // ==========================================
+    window.addToCart = (productId) => {
+      const existingIndex = cart.findIndex(item => item.id === productId);
+      
+      if (existingIndex > -1) {
+        cart[existingIndex].quantity += 1;
+      } else {
+        const product = products.find(p => p.id === productId);
+        cart.push({ ...product, quantity: 1 });
+      }
+
+      saveCart();
+      showToast('Item added to cart!');
+    };
+
+    window.updateQuantity = (productId, delta) => {
+      const index = cart.findIndex(item => item.id === productId);
+      if (index > -1) {
+        cart[index].quantity += delta;
+        if (cart[index].quantity <= 0) {
+          cart.splice(index, 1);
+        }
+        saveCart();
+      }
+    };
+
+    window.removeFromCart = (productId) => {
+      cart = cart.filter(item => item.id !== productId);
+      saveCart();
+      showToast('Item removed');
+    };
+
+    clearCartBtn.addEventListener('click', () => {
+      if (cart.length === 0) return;
+      cart = [];
+      saveCart();
+      showToast('Cart cleared');
+    });
+
+    const renderCart = () => {
+      // 1. Render items
+      if (cart.length === 0) {
+        cartItemsContainer.innerHTML = '<p style="color: #64748b;">Your cart is empty.</p>';
+      } else {
+        cartItemsContainer.innerHTML = cart.map(item => `
+          <div class="cart-item">
+            <div class="item-details">
+              <strong>${item.name}</strong>
+              <span>$${item.price.toFixed(2)} x ${item.quantity} = $${(item.price * item.quantity).toFixed(2)}</span>
+              <div class="qty-controls">
+                <button class="btn btn-sm" onclick="updateQuantity(${item.id}, -1)">-</button>
+                <span>${item.quantity}</span>
+                <button class="btn btn-sm" onclick="updateQuantity(${item.id}, 1)">+</button>
+              </div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="removeFromCart(${item.id})">&times;</button>
+          </div>
+        `).join('');
+      }
+
+      // 2. Perform cart mathematics
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const vat = subtotal * 0.18;
+      const grandTotal = subtotal + vat;
+
+      // 3. Update DOM Totals
+      cartCount.textContent = totalItems;
+      subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+      vatEl.textContent = `$${vat.toFixed(2)}`;
+      grandTotalEl.textContent = `$${grandTotal.toFixed(2)}`;
+    };
+
+    // Render Store Engine
+    const renderStore = () => {
+      renderProducts();
+      renderCart();
+    };
+
+    // ==========================================
+    // 7. BONUS: TOAST NOTIFICATIONS & DARK MODE
+    // ==========================================
+    function showToast(message) {
+      const toastContainer = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      toastContainer.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+    }
+
+    // Dark Mode Toggle
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    themeToggleBtn.addEventListener('click', () => {
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeToggleBtn.textContent = isDark ? '🌙 Dark' : '☀️ Light';
+    });
+
+    // Start App Initialization
+    initAuth();
+  </script>
+</body>
+</html>
